@@ -6,6 +6,9 @@ But the new version is able give a hash code for unknown IR protocols which I al
 
 Because this is based on the original library by Ken.
 * It will only work on Duemilanove and UNO boards (no Mega, Lilypad or Teensy support here – sorry)
-* It will only decode NEC, Sony, RC5 and RC6 codes (and lacks some support for the longer codes)
 
 As I find features that I want to add (i.e. new codes and mega support) I will try to add them and upload to git.
+
+Added:
+Sharp and Dish sending
+Samsung sending and Decoding
