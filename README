@@ -1,0 +1,11 @@
+This is my modification of the awesome library IR that Ken Shirriff made (https://github.com/shirriff/Arduino-IRremote). 
+
+The latest versions of Ken's library seem  to be unable to send and receive IR codes in the same sketch which was a problem for me as I wanted to make an IR repeater/transceiver. So I took an old copy of the library (from here http://www.arcfn.com/2009/08/multi-protocol-infrared-remote-library.html).
+
+But the new version is able give a hash code for unknown IR protocols which I also wanted, so I took the decoding section out of the new library and added it to this one.
+
+Because this is based on the original library by Ken.
+* It will only work on Duemilanove and UNO boards (no Mega, Lilypad or Teensy support here – sorry)
+* It will only decode NEC, Sony, RC5 and RC6 codes (and lacks some support for the longer codes)
+
+As I find features that I want to add (i.e. new codes and mega support) I will try to add them and upload to git.
