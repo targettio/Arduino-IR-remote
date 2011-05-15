@@ -79,6 +79,25 @@ void IRsend::sendNEC(unsigned long data, int nbits)
   mark(NEC_BIT_MARK);
   space(0);
 }
+void IRsend::sendSamsung(unsigned long data, int nbits)
+{
+  enableIROut(38);
+  mark(SAMSUNG_HDR_MARK);
+  space(SAMSUNG_HDR_SPACE);
+  for (int i = 0; i < nbits; i++) {
+    if (data & TOPBIT) {
+      mark(SAMSUNG_BIT_MARK);
+      space(SAMSUNG_ONE_SPACE);
+    }
+    else {
+      mark(SAMSUNG_BIT_MARK);
+      space(SAMSUNG_ZERO_SPACE);
+    }
+    data <<= 1;
+  }
+  mark(SAMSUNG_BIT_MARK);
+  space(0);
+}
 
 void IRsend::sendSony(unsigned long data, int nbits) {
   enableIROut(40);
@@ -357,6 +376,12 @@ int IRrecv::decode(decode_results *results) {
     return DECODED;
   }
 #ifdef DEBUG
+  Serial.println("Attempting Samsung decode");
+#endif 
+  if (decodeSamsung(results)) {
+    return DECODED;
+  }
+#ifdef DEBUG
   Serial.println("Attempting RC5 decode");
 #endif  
   if (decodeRC5(results)) {
@@ -425,6 +450,49 @@ long IRrecv::decodeNEC(decode_results *results) {
   results->value = data;
   results->decode_type = NEC;
   return DECODED;
+}
+
+long IRrecv::decodeSamsung(decode_results *results) {
+  long data = 0;
+  int offset = 1; // Skip first space
+  // Initial mark
+  if (!MATCH_MARK(results->rawbuf[offset], SAMSUNG_HDR_MARK)) {
+    return ERR;
+  }
+  offset++;
+
+  // Check bits
+  if (irparams.rawlen < 2 * SAMSUNG_BITS + 4) {
+    return ERR;
+  }
+
+  // Initial space
+  if (!MATCH_SPACE(results->rawbuf[offset], SAMSUNG_HDR_SPACE)) {
+    return ERR;
+  }
+  offset++;
+
+  for (int i = 0; i < SAMSUNG_BITS; i++) {
+    if (!MATCH_MARK(results->rawbuf[offset], SAMSUNG_BIT_MARK)) {
+      return ERR;
+    }
+    offset++;
+    if (MATCH_SPACE(results->rawbuf[offset], SAMSUNG_ONE_SPACE)) {
+      data = (data << 1) | 1;
+    }
+      else if (MATCH_SPACE(results->rawbuf[offset], SAMSUNG_ZERO_SPACE)) {
+      data <<= 1;
+    }
+    else {
+      return ERR;
+    }
+    offset++;
+  }
+ // Success
+ results->bits = SAMSUNG_BITS;
+ results->value = data;
+ results->decode_type = SAMSUNG;
+ return DECODED;
 }
 
 long IRrecv::decodeSony(decode_results *results) {
@@ -652,3 +720,77 @@ long IRrecv::decodeHash(decode_results *results) {
   results->decode_type = UNKNOWN;
   return DECODED;
 }
+/* Sharp and DISH support by Todd Treece ( http://unionbridge.org/design/ircommand )
+
+The Dish send function needs to be repeated 4 times, and the Sharp function
+has the necessary repeat built in because of the need to invert the signal.
+
+Sharp protocol documentation:
+http://www.sbprojects.com/knowledge/ir/sharp.htm
+
+Here are the LIRC files that I found that seem to match the remote codes
+from the oscilloscope:
+
+Sharp LCD TV:
+http://lirc.sourceforge.net/remotes/sharp/GA538WJSA
+
+DISH NETWORK (echostar 301):
+http://lirc.sourceforge.net/remotes/echostar/301_501_3100_5100_58xx_59xx
+
+For the DISH codes, only send the last for characters of the hex.
+i.e. use 0x1C10 instead of 0x0000000000001C10 which is listed in the
+linked LIRC file.
+*/
+
+void IRsend::sendSharp(unsigned long data, int nbits) {
+  unsigned long invertdata = data ^ SHARP_TOGGLE_MASK;
+  enableIROut(38);
+  for (int i = 0; i < nbits; i++) {
+    if (data & 0x4000) {
+      mark(SHARP_BIT_MARK);
+      space(SHARP_ONE_SPACE);
+    }
+    else {
+      mark(SHARP_BIT_MARK);
+      space(SHARP_ZERO_SPACE);
+    }
+    data <<= 1;
+  }
+  
+  mark(SHARP_BIT_MARK);
+  space(SHARP_ZERO_SPACE);
+  delay(46);
+  for (int i = 0; i < nbits; i++) {
+    if (invertdata & 0x4000) {
+      mark(SHARP_BIT_MARK);
+      space(SHARP_ONE_SPACE);
+    }
+    else {
+      mark(SHARP_BIT_MARK);
+      space(SHARP_ZERO_SPACE);
+    }
+    invertdata <<= 1;
+  }
+  mark(SHARP_BIT_MARK);
+  space(SHARP_ZERO_SPACE);
+  delay(46);
+}
+
+void IRsend::sendDISH(unsigned long data, int nbits)
+{
+  enableIROut(56);
+  mark(DISH_HDR_MARK);
+  space(DISH_HDR_SPACE);
+  for (int i = 0; i < nbits; i++) {
+    if (data & DISH_TOP_BIT) {
+      mark(DISH_BIT_MARK);
+      space(DISH_ONE_SPACE);
+    }
+    else {
+      mark(DISH_BIT_MARK);
+      space(DISH_ZERO_SPACE);
+    }
+    data <<= 1;
+  }
+}
+

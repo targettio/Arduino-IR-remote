@@ -23,7 +23,7 @@
 // Results returned from the decoder
 class decode_results {
 public:
-  int decode_type; // NEC, SONY, RC5, UNKNOWN
+  int decode_type; // NEC, SONY, RC5, RC6, DISH, SHARP, SAMSUNG, UNKNOWN
   unsigned long value; // Decoded value
   int bits; // Number of bits in decoded value
   volatile unsigned int *rawbuf; // Raw intervals in .5 us ticks
@@ -35,6 +35,9 @@ public:
 #define SONY 2
 #define RC5 3
 #define RC6 4
+#define DISH 5
+#define SHARP 6
+#define SAMSUNG 7
 #define UNKNOWN -1
 
 // Decoded value for NEC when a repeat code is received
@@ -54,6 +57,7 @@ private:
   int getRClevel(decode_results *results, int *offset, int *used, int t1);
   long decodeNEC(decode_results *results);
   long decodeSony(decode_results *results);
+  long decodeSamsung(decode_results *results);
   long decodeRC5(decode_results *results);
   long decodeRC6(decode_results *results);
   long decodeHash(decode_results *results);
@@ -74,9 +78,12 @@ public:
   IRsend() {}
   void sendNEC(unsigned long data, int nbits);
   void sendSony(unsigned long data, int nbits);
+  void sendSamsung(unsigned long data, int nbits);
   void sendRaw(unsigned int buf[], int len, int hz);
   void sendRC5(unsigned long data, int nbits);
   void sendRC6(unsigned long data, int nbits);
+  void sendDISH(unsigned long data, int nbits);
+  void sendSharp(unsigned long data, int nbits);
   // private:
   void enableIROut(int khz);
   VIRTUAL void mark(int usec);
