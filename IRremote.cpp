@@ -117,6 +117,55 @@ void IRsend::sendSony(unsigned long data, int nbits) {
   }
 }
 
+void IRsend::sendJVC(unsigned long data, int nbits, int repeat){
+enableIROut(38);
+data = data << (32 - nbits);
+if (!repeat){
+	mark(JVC_HDR_MARK);
+	space(JVC_HDR_SPACE); 
+}
+for (int i = 0; i < nbits; i++) {
+	if (data & TOPBIT) {
+		mark(JVC_BIT_MARK);
+		space(JVC_ONE_SPACE); 
+	}else {
+		mark(JVC_BIT_MARK);
+		space(JVC_ZERO_SPACE); 
+	}
+	data <<= 1;
+}
+mark(JVC_BIT_MARK);
+space(0);
+}
+
+void IRsend::sendPanasonic(unsigned long address, unsigned long data) {
+	enableIROut(38);
+	mark(PANASONIC_HDR_MARK);
+	space(PANASONIC_HDR_SPACE);
+	for (int i=0; i < 32; i++) {
+		mark(PANASONIC_BIT_MARK);
+		if (address & 0x80000000) {
+			space(PANASONIC_ONE_SPACE);
+		} else {
+			space(PANASONIC_ZERO_SPACE);
+		}
+		address <<= 1;
+	}
+	for (int i=0; i < 16; i++) {
+		mark(PANASONIC_BIT_MARK);
+		if (data & 0x8000) {
+			space(PANASONIC_ONE_SPACE);
+		} else {
+			space(PANASONIC_ZERO_SPACE);
+		}
+	data <<= 1;
+	}
+	mark(PANASONIC_BIT_MARK);
+	space(30000);
+	space(30000);
+	space(14000);
+}
+
 void IRsend::sendRaw(unsigned int buf[], int len, int hz)
 {
   enableIROut(hz);
@@ -393,6 +442,18 @@ int IRrecv::decode(decode_results *results) {
   if (decodeRC6(results)) {
     return DECODED;
   }
+#ifdef DEBUG
+  Serial.println("Attempting JVC decode");
+#endif 
+  if (decodeJVC(results)) {
+    return DECODED;
+  }
+#ifdef DEBUG
+  Serial.println("Attempting Panasonic decode");
+#endif 
+  if (decodePanasonic(results)) {
+    return DECODED;
+  }
   // decodeHash returns a hash on any input.
   // Thus, it needs to be last in the list.
   // If you add any decodes, add them before this.
@@ -534,6 +595,104 @@ long IRrecv::decodeSony(decode_results *results) {
   results->decode_type = SONY;
   return DECODED;
 }
+long IRrecv::decodeJVC(decode_results *results) {
+	long data = 0;
+	int offset = 1; // Skip first space
+	// Check for repeat
+	if (irparams.rawlen - 1 == 33 && MATCH_MARK(results->rawbuf[offset], JVC_BIT_MARK) && MATCH_MARK(results->rawbuf[irparams.rawlen-1], JVC_BIT_MARK)) {
+		results->bits = 0;
+		results->value = REPEAT;
+		results->decode_type = JVC;
+		return DECODED;
+	} 
+	// Initial mark
+	if (!MATCH_MARK(results->rawbuf[offset], JVC_HDR_MARK)) {
+		return ERR;
+	}
+	offset++; 
+	if (irparams.rawlen < 2 * JVC_BITS + 1 ) {
+		return ERR;
+	}
+	// Initial space 
+	if (!MATCH_SPACE(results->rawbuf[offset], JVC_HDR_SPACE)) {
+		return ERR;
+	}
+	offset++;
+	for (int i = 0; i < JVC_BITS; i++) {
+		if (!MATCH_MARK(results->rawbuf[offset], JVC_BIT_MARK)) {
+			return ERR;
+		}
+		offset++;
+		if (MATCH_SPACE(results->rawbuf[offset], JVC_ONE_SPACE)) {
+			data = (data << 1) | 1;
+		} 
+		else if (MATCH_SPACE(results->rawbuf[offset], JVC_ZERO_SPACE)) {
+			data <<= 1;
+		}else {
+			return ERR;
+		}
+		offset++;
+	}
+	//Stop bit
+	if (!MATCH_MARK(results->rawbuf[offset], JVC_BIT_MARK)){
+		return ERR;
+	}
+	// Success
+	results->bits = JVC_BITS;
+	results->value = data;
+	results->decode_type = JVC;
+	return DECODED;
+}
+
+long IRrecv::decodePanasonic(decode_results *results) {
+	unsigned long data = 0;
+	int offset = 1;
+
+	if (!MATCH_MARK(results->rawbuf[offset], PANASONIC_HDR_MARK)){
+		return ERR;
+	}
+	offset++;
+	if (!MATCH_MARK(results->rawbuf[offset], PANASONIC_HDR_SPACE)){
+		return ERR;
+	}
+	offset++;
+
+	// decode address
+	for (int i = 0; i < 32; i++) {
+		if (!MATCH_MARK(results->rawbuf[offset++], PANASONIC_BIT_MARK)) {
+			return ERR;
+		}
+		if (MATCH_SPACE(results->rawbuf[offset],PANASONIC_ONE_SPACE)) {
+			data = (data << 1) | 1;
+		} else if (MATCH_SPACE(results->rawbuf[offset],PANASONIC_ZERO_SPACE)) {
+			data <<= 1;
+		} else {
+			return ERR;
+		}
+		offset++;
+	}	
+	results->address = data;
+	data = 0;
+	for (int i = 0; i < 16; i++) {
+		if (!MATCH_MARK(results->rawbuf[offset++], PANASONIC_BIT_MARK)) {
+			return ERR;
+		}
+		if (MATCH_SPACE(results->rawbuf[offset],PANASONIC_ONE_SPACE)) {
+			data = (data << 1) | 1;
+		} else if (MATCH_SPACE(results->rawbuf[offset],PANASONIC_ZERO_SPACE)) {
+			data <<= 1;
+		} else {
+			return ERR;
+		}
+		offset++;
+	}
+	results->value = data;
+
+	results->decode_type = PANASONIC;
+	results->bits = 48;
+	return DECODED;
+} 
+
 
 // Gets one undecoded level at a time from the raw buffer.
 // The RC5/6 decoding is easier if the data is broken into time intervals.

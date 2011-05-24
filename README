@@ -11,5 +11,7 @@ As I find features that I want to add (i.e. new codes and mega support) I will t
 
 I have added (code taken from the latest version of the libary and various blogs/forum posts):
 * Decoding hash codes for unknown protocols
-* Sharp and Dish sending
-* Samsung sending and Decoding
+* Sharp and Dish Transmitting 
+* Samsung Transmitting and Decoding
+* JVC Transmitting and Decoding
+* Panasonic Transmitting and Decoding

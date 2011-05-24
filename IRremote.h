@@ -23,8 +23,9 @@
 // Results returned from the decoder
 class decode_results {
 public:
-  int decode_type; // NEC, SONY, RC5, RC6, DISH, SHARP, SAMSUNG, UNKNOWN
+  int decode_type; // NEC, SONY, RC5, RC6, DISH, SHARP, SAMSUNG, JVC, UNKNOWN
   unsigned long value; // Decoded value
+  unsigned long address; // address for panasonic codes
   int bits; // Number of bits in decoded value
   volatile unsigned int *rawbuf; // Raw intervals in .5 us ticks
   int rawlen; // Number of records in rawbuf.
@@ -38,6 +39,8 @@ public:
 #define DISH 5
 #define SHARP 6
 #define SAMSUNG 7
+#define JVC 8
+#define PANASONIC 9
 #define UNKNOWN -1
 
 // Decoded value for NEC when a repeat code is received
@@ -60,7 +63,9 @@ private:
   long decodeSamsung(decode_results *results);
   long decodeRC5(decode_results *results);
   long decodeRC6(decode_results *results);
+  long decodeJVC(decode_results *results);
   long decodeHash(decode_results *results);
+  long decodePanasonic(decode_results *results);
   int compare(unsigned int oldval, unsigned int newval);
 } 
 ;
@@ -84,6 +89,8 @@ public:
   void sendRC6(unsigned long data, int nbits);
   void sendDISH(unsigned long data, int nbits);
   void sendSharp(unsigned long data, int nbits);
+  void sendJVC(unsigned long data, int nbits, int repeat);
+  void sendPanasonic(unsigned long address, unsigned long data);
   // private:
   void enableIROut(int khz);
   VIRTUAL void mark(int usec);
