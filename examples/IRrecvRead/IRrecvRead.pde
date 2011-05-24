@@ -34,7 +34,7 @@ void dump(decode_results *results) {
   if (results->decode_type == UNKNOWN) {
     Serial.print("Unknown encoding: ");
   }
-  else if (results->decode_type == NEC) {
+    else if (results->decode_type == NEC) {
     Serial.print("Decoded NEC: ");
   }
   else if (results->decode_type == SONY) {
@@ -48,6 +48,12 @@ void dump(decode_results *results) {
   }
   else if (results->decode_type == SAMSUNG) {
     Serial.print("Decoded SAMSUNG: ");
+  }
+  else if (results->decode_type == JVC) {
+    Serial.print("Decoded JVC: ");
+  }
+  else if (results->decode_type == Panasonic) {
+    Serial.print("Decoded Panasonic: ");
   }
   Serial.print(results->value, HEX);
   Serial.print("(");
