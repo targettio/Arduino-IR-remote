@@ -9,7 +9,7 @@ Because this is based on the original library by Ken.
 
 As I find features that I want to add (i.e. new codes and mega support) I will try to add them and upload to git.
 
-I have added (code taken from the latest version of the libary and various blogs/forum posts and some of my own work):
+I have added (code taken from the latest version of the libary and various blogs/forum posts):
 * Decoding hash codes for unknown protocols
 * Sharp and Dish Transmitting 
 * Samsung Transmitting and Decoding
