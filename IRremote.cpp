@@ -1,12 +1,10 @@
 /*
- * IRremote
- * Version 0.11 August, 2009
- * Copyright 2009 Ken Shirriff
- * For details, see http://arcfn.com/2009/08/multi-protocol-infrared-remote-library.html
+ * IRremote v1.1
+ * By Chris Targett
+ * November 2011
  *
- * Interrupt code based on NECIRrcv by Joe Knapp
- * http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1210243556
- * Also influenced by http://zovirl.com/2008/11/12/building-a-universal-remote-with-an-arduino/
+ * Based on Ken Shirriff's Version 0.11 of his IR-Remote library August, 2009
+ * https://github.com/shirriff/Arduino-IRremote
  */
 
 #include "IRremote.h"
@@ -203,10 +201,10 @@ void IRsend::sendRC5(unsigned long data, int nbits)
 }
 
 // Caller needs to take care of flipping the toggle bit
-void IRsend::sendRC6(unsigned long data, int nbits)
+void IRsend::sendRC6(unsigned long long data, int nbits)
 {
   enableIROut(36);
-  data = data << (32 - nbits);
+  data = data << (64 - nbits);
   mark(RC6_HDR_MARK);
   space(RC6_HDR_SPACE);
   mark(RC6_T1); // start bit
@@ -216,19 +214,18 @@ void IRsend::sendRC6(unsigned long data, int nbits)
     if (i == 3) {
       // double-wide trailer bit
       t = 2 * RC6_T1;
-    } 
+    }
     else {
       t = RC6_T1;
     }
-    if (data & TOPBIT) {
+    if (data & 0x8000000000000000LL) {
       mark(t);
       space(t);
-    } 
+    }
     else {
       space(t);
       mark(t);
     }
-
     data <<= 1;
   }
   space(0); // Turn off at end

@@ -1,12 +1,10 @@
 /*
- * IRremote
- * Version 0.1 July, 2009
- * Copyright 2009 Ken Shirriff
- * For details, see http://arcfn.com/2009/08/multi-protocol-infrared-remote-library.html
+ * IRremote v1.1
+ * By Chris Targett
+ * November 2011
  *
- * Interrupt code based on NECIRrcv by Joe Knapp
- * http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1210243556
- * Also influenced by http://zovirl.com/2008/11/12/building-a-universal-remote-with-an-arduino/
+ * Based on Ken Shirriff's Version 0.11 of his IR-Remote library August, 2009
+ * https://github.com/shirriff/Arduino-IRremote
  */
 
 #ifndef IRremoteint_h

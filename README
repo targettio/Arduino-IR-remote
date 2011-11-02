@@ -15,3 +15,8 @@ I have added (code taken from the latest version of the libary and various blogs
 * Samsung Transmitting and Decoding
 * JVC Transmitting and Decoding
 * Panasonic Transmitting and Decoding
+
+November Update:
+* Added 64bit support for RC6 (Xbox 360 support)
+* Updated the Examples
+* Bug Fixes

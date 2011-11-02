@@ -1,4 +1,9 @@
 /*
+
+ * Modified by Chris Targett
+ * Now includes more protocols
+ * Novemeber 2011
+
  * IRrecord: record and play back IR signals as a minimal 
  * An IR detector/demodulator must be connected to the input RECV_PIN.
  * An IR LED must be connected to the output PWM pin 3.
@@ -86,6 +91,15 @@ void storeCode(decode_results *results) {
     else if (codeType == RC6) {
       Serial.print("Received RC6: ");
     } 
+	else if (results->decode_type == SAMSUNG) {
+      Serial.print("Decoded SAMSUNG: ");
+    }
+    else if (results->decode_type == JVC) {
+	  Serial.print("Decoded JVC: ");
+    }
+    else if (results->decode_type == PANASONIC) {
+	  Serial.print("Decoded Panasonic: ");
+    }
     else {
       Serial.print("Unexpected codeType ");
       Serial.print(codeType, DEC);

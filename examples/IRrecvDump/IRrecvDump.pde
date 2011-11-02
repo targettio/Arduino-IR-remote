@@ -1,4 +1,9 @@
 /*
+
+ * Modified by Chris Targett
+ * Now includes more protocols
+ * Novemeber 2011
+
  * IRremote: IRrecvDump - dump details of IR codes with IRrecv
  * An IR detector/demodulator must be connected to the input RECV_PIN.
  * Version 0.1 July, 2009
@@ -48,7 +53,7 @@ void dump(decode_results *results) {
   else if (results->decode_type == JVC) {
     Serial.print("Decoded JVC: ");
   }
-  else if (results->decode_type == Panasonic) {
+  else if (results->decode_type == PANASONIC) {
     Serial.print("Decoded Panasonic: ");
   }
   Serial.print(results->value, HEX);

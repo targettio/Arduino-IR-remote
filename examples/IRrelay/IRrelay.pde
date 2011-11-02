@@ -1,4 +1,9 @@
 /*
+
+ * Modified by Chris Targett
+ * Now includes more protocols
+ * Novemeber 2011
+
  * IRremote: IRrecvDemo - demonstrates receiving IR codes with IRrecv
  * An IR detector/demodulator must be connected to the input RECV_PIN.
  * Version 0.1 July, 2009
@@ -22,25 +27,28 @@ decode_results results;
 void dump(decode_results *results) {
   int count = results->rawlen;
   if (results->decode_type == UNKNOWN) {
-    Serial.println("Could not decode message");
-  } 
-  else {
-    if (results->decode_type == NEC) {
-      Serial.print("Decoded NEC: ");
-    } 
-    else if (results->decode_type == SONY) {
-      Serial.print("Decoded SONY: ");
-    } 
-    else if (results->decode_type == RC5) {
-      Serial.print("Decoded RC5: ");
-    } 
-    else if (results->decode_type == RC6) {
-      Serial.print("Decoded RC6: ");
-    }
-    Serial.print(results->value, HEX);
-    Serial.print(" (");
-    Serial.print(results->bits, DEC);
-    Serial.println(" bits)");
+    Serial.print("Unknown encoding: ");
+  }
+    else if (results->decode_type == NEC) {
+    Serial.print("Decoded NEC: ");
+  }
+  else if (results->decode_type == SONY) {
+    Serial.print("Decoded SONY: ");
+  }
+  else if (results->decode_type == RC5) {
+    Serial.print("Decoded RC5: ");
+  }
+  else if (results->decode_type == RC6) {
+    Serial.print("Decoded RC6: ");
+  }
+  else if (results->decode_type == SAMSUNG) {
+    Serial.print("Decoded SAMSUNG: ");
+  }
+  else if (results->decode_type == JVC) {
+    Serial.print("Decoded JVC: ");
+  }
+  else if (results->decode_type == PANASONIC) {
+    Serial.print("Decoded Panasonic: ");
   }
   Serial.print("Raw (");
   Serial.print(count, DEC);
